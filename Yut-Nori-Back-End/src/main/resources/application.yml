@@ -1,3 +1,7 @@
+# 포트 설정
+server:
+  port: 8080
+
 spring:
   # MySQL
   datasource:
@@ -5,3 +9,21 @@ spring:
     url: ${mysql.url}
     username: ${mysql.username}
     password: ${mysql.password}
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        # sql 쿼리를 예쁘게 표시
+        format_sql: true
+        # 로그에 sql 추가
+        show_sql: true
+
+# 로그 레벨 설정
+logging:
+  level:
+    # 하이버네이트가 남기는 로그 debug 모드로 설정
+    org.hibernate.sql: debug
+    # 실제 들어가는 파라미터 값 표시 설정
+    org.hibernate.type: trace
