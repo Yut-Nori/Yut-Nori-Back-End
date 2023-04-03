@@ -18,11 +18,8 @@ public class SecurityConfig {
     public WebSecurityCustomizer configure(){
         return (web) -> web.ignoring()
                 .antMatchers(
-                        "/configuration/ui",
-                        "/swagger-resources/**",
-                        "/configuration/security",
-                        "/swagger-ui.html",
-                        "/webjars/**"
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**"
                 );
     }
 
