@@ -32,9 +32,19 @@ logging:
     org.hibernate.sql: debug
     # 실제 들어가는 파라미터 값 표시 설정
     org.hibernate.type: trace
+  # tinyLog 설정
+    root: info
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{15} - %msg%n"
+#  file: # 로그 생성 파일 정보
+#    name: yutnori_backend.log
+#    path: /var/log/yutnori_backend
+
 
 # jwt 설정
 jwt:
   header: Authorization # JWT를 검증하는데 필요한 정보
   secret: ${env.jwt.secret} #HS512 알고리즘을 사용할 것이기 때문에 512bit, 즉 64byte 이상의 secret key를 사용해야 한다
   token-validity-in-seconds: 10000 # 토큰의 만료시간을 지정함 (단위는 초)
+
+
