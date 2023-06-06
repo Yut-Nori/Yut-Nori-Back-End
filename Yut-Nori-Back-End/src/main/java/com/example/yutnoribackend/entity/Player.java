@@ -8,12 +8,15 @@ import java.util.Date;
 public class Player {
     @Id
     @Column(name = "player_pk")
-    private int player_pk;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int playerPk;
+
     @Column(name = "player_status")
-    private boolean player_status;
+    private boolean playerStatus;
+
     @Column(name = "player_jointime")
     @Temporal(TemporalType.TIMESTAMP)
-    private Date player_jointime;
+    private Date playerJointime;
 
     @ManyToOne(targetEntity = Room.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "room_pk")
