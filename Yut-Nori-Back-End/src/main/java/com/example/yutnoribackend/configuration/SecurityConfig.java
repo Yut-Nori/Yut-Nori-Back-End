@@ -11,6 +11,8 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -34,6 +36,12 @@ public class SecurityConfig {
         this.tokenProvider = tokenProvider;
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
         this.jwtAccessDeniedHandler = jwtAccessDeniedHandler;
+    }
+
+    // 비밀번호 암호화
+    @Bean
+    public PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
     }
 
     // 인증, 인가 서비스가 필요하지 않은 endpoin 적용
@@ -78,7 +86,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults()) // cors 설정
 
                 .authorizeRequests() // 요청에 의한 보안 검사 시작
-                .antMatchers("/*").permitAll() //antMatchers 에 설정한 리소스의 접근을 인증 절차 없이 허용
+                .antMatchers("/api/v1/account/signup").permitAll() //antMatchers 에 설정한 리소스의 접근을 인증 절차 없이 허용
 
                 .anyRequest().authenticated() // 위에서 설정하지 않은 나머지 부분들은 인증 절차 수행
 

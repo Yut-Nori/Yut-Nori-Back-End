@@ -12,8 +12,12 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
-    properties:
+      # DB 플랫폼
+      database-platform: org.hibernate.dialect.MySQL8Dialect
+      ddl-auto: update
+      # 스키마 자동 생성
+      generate-ddl: true
+
       hibernate:
         # sql 쿼리를 예쁘게 표시
         format_sql: true
