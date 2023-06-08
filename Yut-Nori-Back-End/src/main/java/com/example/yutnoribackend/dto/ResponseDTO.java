@@ -1,6 +1,5 @@
 package com.example.yutnoribackend.dto;
 
-import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
