@@ -1,9 +1,14 @@
 package com.example.yutnoribackend.service;
 
+import com.example.yutnoribackend.dto.LoginDTO;
 import com.example.yutnoribackend.dto.SignupDTO;
+import com.example.yutnoribackend.dto.TokenDTO;
 import com.example.yutnoribackend.entity.User;
 import com.example.yutnoribackend.entity.UserRole;
+import com.example.yutnoribackend.jwt.TokenProvider;
 import com.example.yutnoribackend.repository.AccountRepository;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.tinylog.Logger;
@@ -13,11 +18,16 @@ public class AccountService {
 
     private final AccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder; // 비밀번호 암호화 (config - SecurityConfig.java)
-
+    private final TokenProvider tokenProvider;
+    private final TokenService tokenService;
+    private final RedisService redisService;
     // 생성자
-    public AccountService(AccountRepository accountRepository, PasswordEncoder passwordEncoder){
+    public AccountService(AccountRepository accountRepository, PasswordEncoder passwordEncoder, TokenProvider tokenProvider, TokenService tokenService, RedisService redisService){
         this.accountRepository = accountRepository;
         this.passwordEncoder = passwordEncoder;
+        this.tokenProvider = tokenProvider;
+        this.tokenService = tokenService;
+        this.redisService = redisService;
     }
 
     // signup service
@@ -64,6 +74,31 @@ public class AccountService {
         return true;
     }
 
+    // 로그인
+    public TokenDTO loginService(LoginDTO loginDTO) throws BadCredentialsException{
+        Authentication authentication;
 
+        // authentication 얻기
+        try {
+            authentication = tokenProvider.createAuthenticate(loginDTO.getUserId(), loginDTO.getUserPassword());
+        }catch (BadCredentialsException e){
+            Logger.warn("login err : unauthorized");
+            throw e;
+        }
+
+        // access token, refresh token 생성
+        String accessToken = tokenService.createAccessToken(authentication);
+        String refreshToken = tokenService.createRefreshToken(authentication);
+        TokenDTO tokenDTO = TokenDTO.builder()
+                .grantType("Bearer")
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+
+//        //userId을 key 값으로 refreshToken을 value로 설정
+        redisService.setValues(loginDTO.getUserId(), refreshToken);
+
+        return tokenDTO;
+    }
 
 }
