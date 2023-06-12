@@ -3,6 +3,8 @@ package com.example.yutnoribackend.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
+import lombok.ToString;
 import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
@@ -10,6 +12,7 @@ import javax.persistence.*;
 @Entity
 @Builder
 @AllArgsConstructor
+@Getter
 @Table(name = "user")
 public class User {
     @Id
