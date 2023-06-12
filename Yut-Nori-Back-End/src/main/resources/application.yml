@@ -29,6 +29,12 @@ spring:
       name: admin
       password: password
 
+  # RedisConfig
+  redis:
+    host: ${redis.host}
+    port: ${redis.port}
+
+
 # 로그 레벨 설정
 logging:
   level:
