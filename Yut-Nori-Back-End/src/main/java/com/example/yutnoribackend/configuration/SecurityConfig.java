@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -28,6 +29,7 @@ public class SecurityConfig {
     private final TokenProvider tokenProvider;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler  jwtAccessDeniedHandler;
+
 
     public SecurityConfig(
             TokenProvider tokenProvider,
@@ -79,6 +81,11 @@ public class SecurityConfig {
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint) // 401
                 .accessDeniedHandler(jwtAccessDeniedHandler) // 403
 
+                // 세션을 사용하지 않기 때문에 STATELESS로 설정 (설정 안하는 경우 1회 로그인시 토큰 만료 기간 지나도 permit 되는 경우 발생)
+                .and()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+
                 .and()
                 .headers().frameOptions().sameOrigin() // 동일 도메인에서는 X-Frame-Option 활성화
 
@@ -87,7 +94,7 @@ public class SecurityConfig {
 
                 .authorizeRequests() // 요청에 의한 보안 검사 시작
                 .antMatchers("/api/v1/account/signup").permitAll() //antMatchers 에 설정한 리소스의 접근을 인증 절차 없이 허용
-
+                .antMatchers("/api/v1/account/login").permitAll()
                 .anyRequest().authenticated() // 위에서 설정하지 않은 나머지 부분들은 인증 절차 수행
 
                 // JwtSecurityConfig 실행

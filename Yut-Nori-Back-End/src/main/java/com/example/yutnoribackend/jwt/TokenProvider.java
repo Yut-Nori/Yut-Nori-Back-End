@@ -6,11 +6,15 @@ import org.springframework.beans.factory.InitializingBean;
 import io.jsonwebtoken.io.Decoders;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
+import org.tinylog.Logger;
+
 import java.security.Key;
 import java.util.Arrays;
 import java.util.Collection;
@@ -22,17 +26,16 @@ import java.util.stream.Collectors;
 public class TokenProvider implements InitializingBean {
 
     private final String secret;
-    private final long tokenValidityInMilliseconds;
     private Key key;
     private static final String AUTHORITIES_KEY = "auth";
+    private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     // 생성자
     public TokenProvider(
             @Value("${jwt.secret}") String secret, //jwt secret
-            @Value("${jwt.token-validity-in-seconds}") long tokenValidityInMilliseconds //토큰 유효기간
-            ) {
+            AuthenticationManagerBuilder authenticationManagerBuilder) {
         this.secret = secret;
-        this.tokenValidityInMilliseconds = tokenValidityInMilliseconds;
+        this.authenticationManagerBuilder = authenticationManagerBuilder;
     }
 
     // 빈이 생성이 되고 의존성 주입 받은 secret값을 Base64 Decode해서 key변수에 할당
@@ -107,5 +110,23 @@ public class TokenProvider implements InitializingBean {
 //            logger.info("JWT 토큰이 잘못되었습니다.");
         }
         return false;
+    }
+
+    // authenticationToken 생성
+    public Authentication createAuthenticate(String userId, String userPassword){
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userId, userPassword);
+
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        SecurityContextHolder.getContext().setAuthentication(authentication); // SecurityContextHolder에 등록
+
+        return authentication;
+    }
+
+    // 해당 User의 권한을 얻기
+    public String getAuthorities(Authentication authentication){
+        String authorities = authentication.getAuthorities()
+                .stream().map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
+        return authorities;
     }
 }

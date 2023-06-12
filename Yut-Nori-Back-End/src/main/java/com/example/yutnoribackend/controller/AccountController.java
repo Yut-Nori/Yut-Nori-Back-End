@@ -1,15 +1,19 @@
 package com.example.yutnoribackend.controller;
 
+import com.example.yutnoribackend.dto.LoginDTO;
 import com.example.yutnoribackend.dto.ResponseDTO;
 import com.example.yutnoribackend.dto.SignupDTO;
 
+import com.example.yutnoribackend.dto.TokenDTO;
+import com.example.yutnoribackend.jwt.JwtFilter;
+import com.example.yutnoribackend.jwt.TokenProvider;
 import com.example.yutnoribackend.service.AccountService;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 import org.tinylog.Logger;
 
 import javax.validation.Valid;
@@ -44,4 +48,25 @@ public class AccountController {
         }
     }
 
+    // 로그인 controller
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@Valid @RequestBody LoginDTO loginDTO){
+        try {
+            TokenDTO tokenDTO = accountService.loginService(loginDTO);
+            HttpHeaders httpHeaders = new HttpHeaders();
+            httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + tokenDTO.getAccessToken() + " " + tokenDTO.getRefreshToken());
+            return new ResponseEntity<TokenDTO>(tokenDTO, httpHeaders, HttpStatus.OK);
+        }catch (BadCredentialsException e){
+            return new ResponseEntity<ResponseDTO>(new ResponseDTO(HttpStatus.UNAUTHORIZED.value(), "아이디 및 비밀번호가 일치하지 않습니다."), HttpStatus.UNAUTHORIZED);
+        }catch (Exception e){
+            return new ResponseEntity<ResponseDTO>(new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), "서버 오류."), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // Test controller <로그인 필요>
+    @GetMapping("/test")
+    public String test(){
+        Logger.warn("test!!!");
+        return "1111";
+    }
 }
