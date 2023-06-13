@@ -7,11 +7,15 @@ import com.example.yutnoribackend.entity.User;
 import com.example.yutnoribackend.entity.UserRole;
 import com.example.yutnoribackend.jwt.TokenProvider;
 import com.example.yutnoribackend.repository.AccountRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.tinylog.Logger;
+
+import javax.servlet.http.HttpServletRequest;
 
 @Service
 public class AccountService {
@@ -101,4 +105,41 @@ public class AccountService {
         return tokenDTO;
     }
 
+    // 로그아웃 service
+    public boolean logout(HttpServletRequest request){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String token = tokenService.getToken(request);
+
+        // 토큰 유효성 검사
+        if (!tokenProvider.validateToken(token)) {
+            Logger.info("유효하지 않은 토큰입니다.");
+            return false;
+        }
+
+        // refresh 토큰 삭제
+        if(redisService.getValues(authentication.getName()) != null){
+            redisService.deleteValues(authentication.getName());
+        }
+
+        // accessToken을 블랙 리스트로 등록 - 토큰 만료 시키기
+        tokenService.setBlackList(request);
+
+        if (isLogout(token)){
+            return false;
+        }
+
+        return true;
+    }
+
+    //redis에 토큰이 로그아웃 처리되어 블랙리스트 등록 여부 확인
+    public boolean isLogout(String token){
+        // null이 아니면 토큰이 있는 것 -> 블랙리스트 등록된 것
+
+        if(redisService.getValues(token) != null){
+            return false;
+        }
+
+        //블랙리스트 등록되지 않음
+        return true;
+    }
 }
