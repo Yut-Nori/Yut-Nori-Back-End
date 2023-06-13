@@ -1,5 +1,6 @@
 package com.example.yutnoribackend.jwt;
 
+import com.example.yutnoribackend.service.RedisService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
@@ -15,12 +16,15 @@ import java.io.IOException;
 // JWT를 위한 커스텀 필터를 만들기 위한 클래스
 public class JwtFilter extends GenericFilterBean {
 
-    private TokenProvider tokenProvider;
+    private final TokenProvider tokenProvider;
     public static final String AUTHORIZATION_HEADER = "Authorization";
+    private final RedisService redisService;
+
 
     // 생성자
-    public JwtFilter(TokenProvider tokenProvider) {
+    public JwtFilter(TokenProvider tokenProvider, RedisService redisService) {
         this.tokenProvider = tokenProvider;
+        this.redisService = redisService;
     }
 
     // doFilter : JWT 토큰의 인증정보를 현재 실행중인 SecurityContext에 저장하는 역활 (실제 필터링 로직은 doFilter 내부에 작성)
@@ -31,8 +35,10 @@ public class JwtFilter extends GenericFilterBean {
         String jwt = resolveToken(httpServletRequest); // 토큰 정보 획득
 
         if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) { // 토큰 유효성 검사
-            Authentication authentication = tokenProvider.getAuthentication(jwt); // 토큰의 인증 정보 가져오기
-            SecurityContextHolder.getContext().setAuthentication(authentication); // 토큰 인증 정보를 security context에 저장
+            if (redisService.getValues(jwt) == null){ // 로그아웃한 토큰이 아닌 경우
+                Authentication authentication = tokenProvider.getAuthentication(jwt); // 토큰의 인증 정보 가져오기
+                SecurityContextHolder.getContext().setAuthentication(authentication); // 토큰 인증 정보를 security context에 저장
+            }
         } else {
             logger.debug("유효한 JWT 토큰이 없습니다, uri: {} " + requestURI);
         }

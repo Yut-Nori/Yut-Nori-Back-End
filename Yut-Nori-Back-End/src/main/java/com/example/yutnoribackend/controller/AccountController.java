@@ -8,14 +8,17 @@ import com.example.yutnoribackend.dto.TokenDTO;
 import com.example.yutnoribackend.jwt.JwtFilter;
 import com.example.yutnoribackend.jwt.TokenProvider;
 import com.example.yutnoribackend.service.AccountService;
+import com.example.yutnoribackend.service.RedisService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.tinylog.Logger;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 @RestController
@@ -23,7 +26,6 @@ import javax.validation.Valid;
 public class AccountController {
 
     private final AccountService accountService;
-
 
     // 생성자
     public AccountController(AccountService accountService) {
@@ -63,10 +65,20 @@ public class AccountController {
         }
     }
 
+    // 로그아웃 controller
+    // todo
+    @GetMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request){
+        if(accountService.logout(request)){
+            return ResponseEntity.ok(new ResponseDTO(HttpStatus.OK.value(), "로그아웃 되었습니다"));
+        }else{
+            return ResponseEntity.ok(new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(),"서버 오류 발생"));
+        }
+    }
+
     // Test controller <로그인 필요>
     @GetMapping("/test")
-    public String test(){
-        Logger.warn("test!!!");
+    public String test(HttpServletRequest request){
         return "1111";
     }
 }
