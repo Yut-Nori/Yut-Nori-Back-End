@@ -4,6 +4,7 @@ import com.example.yutnoribackend.jwt.JwtAccessDeniedHandler;
 import com.example.yutnoribackend.jwt.JwtAuthenticationEntryPoint;
 import com.example.yutnoribackend.jwt.JwtSecurityConfig;
 import com.example.yutnoribackend.jwt.TokenProvider;
+import com.example.yutnoribackend.service.RedisService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -29,15 +30,17 @@ public class SecurityConfig {
     private final TokenProvider tokenProvider;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler  jwtAccessDeniedHandler;
+    private final RedisService redisService;
 
 
     public SecurityConfig(
             TokenProvider tokenProvider,
             JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
-            JwtAccessDeniedHandler jwtAccessDeniedHandler) {
+            JwtAccessDeniedHandler jwtAccessDeniedHandler, RedisService redisService) {
         this.tokenProvider = tokenProvider;
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
         this.jwtAccessDeniedHandler = jwtAccessDeniedHandler;
+        this.redisService = redisService;
     }
 
     // 비밀번호 암호화
@@ -73,6 +76,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
         return http
                 .csrf().disable() // csrf 비활성화
 
@@ -99,7 +103,7 @@ public class SecurityConfig {
 
                 // JwtSecurityConfig 실행
                 .and()
-                .apply(new JwtSecurityConfig(tokenProvider))
+                .apply(new JwtSecurityConfig(tokenProvider, redisService))
 
                 .and()
                 .build();
