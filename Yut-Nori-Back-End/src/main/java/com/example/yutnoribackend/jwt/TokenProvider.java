@@ -129,4 +129,26 @@ public class TokenProvider implements InitializingBean {
                 .collect(Collectors.joining(","));
         return authorities;
     }
+
+    // 만료일 확인
+    public Date getExpiration(String token){
+        Date expiration = Jwts
+                .parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getExpiration();
+        return expiration;
+    }
+
+    // 토큰이 만료기간이 지났는지 확인
+    public boolean checkUnauthorize(String token){
+        try {
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+        } catch (ExpiredJwtException e) {
+            return true;
+        }
+        return false;
+    }
 }
