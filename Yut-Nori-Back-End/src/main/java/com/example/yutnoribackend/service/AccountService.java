@@ -1,12 +1,14 @@
 package com.example.yutnoribackend.service;
 
 import com.example.yutnoribackend.dto.LoginDTO;
+import com.example.yutnoribackend.dto.ResponseDTO;
 import com.example.yutnoribackend.dto.SignupDTO;
 import com.example.yutnoribackend.dto.TokenDTO;
 import com.example.yutnoribackend.entity.User;
 import com.example.yutnoribackend.entity.UserRole;
 import com.example.yutnoribackend.jwt.TokenProvider;
 import com.example.yutnoribackend.repository.AccountRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
@@ -142,4 +144,36 @@ public class AccountService {
         //블랙리스트 등록되지 않음
         return true;
     }
+
+    // 토큰 재발급
+    public String reIssue(HttpServletRequest request){
+        String userId = tokenService.getUserIdFromToken(request);
+
+        // 사용자 정보가 토큰에 없는 경우
+        if (userId.equals("null")) {
+            Logger.warn("사용자 정보가 없습니다.");
+            return null;
+        }
+
+        // refresh 토큰이 유효하지 않은 경우
+        if(!tokenService.checkRefreshToken(userId)){
+            Logger.warn("refresh 토큰이 만료되었습니다.");
+            redisService.deleteValues(userId); //refresh 토큰 삭제
+            return null;
+        }
+
+        // 잘못된 접근인 경우
+        if(!tokenService.checkAccessToken(request)){
+            Logger.warn("잘못된 접근방식입니다.");
+            tokenService.setBlackList(request);
+            redisService.deleteValues(userId);
+            return null;
+        }
+
+
+        String accessToken = tokenService.reIssueAccessToken(userId);
+        return accessToken;
+    }
+
+
 }
