@@ -76,6 +76,19 @@ public class AccountController {
         }
     }
 
+    // 토큰 재발급 controller
+    @GetMapping("/re-issue")
+    public ResponseEntity<?> reIssue(HttpServletRequest request) {
+        String accessToken = accountService.reIssue(request);
+        if (accessToken == null){
+            return ResponseEntity.ok(new ResponseDTO(403,"잘못된 접근입니다."));
+        }
+        TokenDTO responseDto = TokenDTO.builder().accessToken(accessToken).build();
+
+        return new ResponseEntity<TokenDTO>(responseDto, HttpStatus.OK);
+
+    }
+
     // Test controller <로그인 필요>
     @GetMapping("/test")
     public String test(HttpServletRequest request){
