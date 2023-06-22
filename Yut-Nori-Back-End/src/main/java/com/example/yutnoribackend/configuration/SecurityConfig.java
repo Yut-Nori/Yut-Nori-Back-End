@@ -100,8 +100,9 @@ public class SecurityConfig {
                 .antMatchers("/api/v1/account/signup").permitAll() //antMatchers 에 설정한 리소스의 접근을 인증 절차 없이 허용
                 .antMatchers("/api/v1/account/login").permitAll()
                 .antMatchers("/api/v1/account/re-issue").permitAll()
-                .anyRequest().authenticated() // 위에서 설정하지 않은 나머지 부분들은 인증 절차 수행
+//                .anyRequest().authenticated() // 위에서 설정하지 않은 나머지 부분들은 인증 절차 수행
 
+                .anyRequest().permitAll()
                 // JwtSecurityConfig 실행
                 .and()
                 .apply(new JwtSecurityConfig(tokenProvider, redisService))
