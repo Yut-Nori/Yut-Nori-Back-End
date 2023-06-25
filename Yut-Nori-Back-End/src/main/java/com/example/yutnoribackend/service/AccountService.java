@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.tinylog.Logger;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.NoSuchElementException;
 
 @Service
 public class AccountService {
@@ -64,11 +65,13 @@ public class AccountService {
 
     // 이메일 중복 여부 판단
     public boolean isUsableId(SignupDTO signupDto){
-        if (accountRepository.findUserByUserId(signupDto.getUserId()) != null){
+        try{
+            accountRepository.findUserByUserId(signupDto.getUserId()).get();
             Logger.warn("이미 가입되어 있는 아이디입니다.");
             return false;
+        }catch (NoSuchElementException e){
+            return true;
         }
-        return true;
     }
 
     // 비밀번호 일치 여부 판단

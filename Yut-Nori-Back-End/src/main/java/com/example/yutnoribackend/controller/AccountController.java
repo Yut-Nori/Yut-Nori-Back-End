@@ -35,7 +35,6 @@ public class AccountController {
     // 회원가입 controller
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@Valid @RequestBody SignupDTO signupDto){
-        Logger.info("test");
         String result = accountService.signupService(signupDto);
         Logger.info("result " + result);
         switch (result){
@@ -86,12 +85,5 @@ public class AccountController {
         TokenDTO responseDto = TokenDTO.builder().accessToken(accessToken).build();
 
         return new ResponseEntity<TokenDTO>(responseDto, HttpStatus.OK);
-
-    }
-
-    // Test controller <로그인 필요>
-    @GetMapping("/test")
-    public String test(HttpServletRequest request){
-        return "1111";
     }
 }
