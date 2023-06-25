@@ -1,6 +1,9 @@
 package com.example.yutnoribackend.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -12,12 +15,12 @@ public class Turn {
     private int turnPk;
 
     @Column(name = "turn_start_time")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date turnStartTime;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
+    private LocalDateTime turnStartTime;
 
     @Column(name = "turn_end_time")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date turnEndTime;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
+    private LocalDateTime turnEndTime;
 
     @ManyToOne(targetEntity = Game.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "game_pk")
