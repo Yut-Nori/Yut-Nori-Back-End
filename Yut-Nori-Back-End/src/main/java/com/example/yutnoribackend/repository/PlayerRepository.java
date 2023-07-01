@@ -8,4 +8,6 @@ import java.util.List;
 public interface PlayerRepository extends JpaRepository<Player, Integer> {
     List<Player> findPlayersByRoom_RoomPk(int roomPk);
     Long deletePlayersByRoom_RoomPk(int roomPk);
+    Long deletePlayersByUser_UserId(String userId);
+    Long countPlayerByRoom_RoomPk(int roomPk);
 }
