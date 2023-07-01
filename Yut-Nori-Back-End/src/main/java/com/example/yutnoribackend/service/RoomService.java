@@ -5,6 +5,7 @@ import com.example.yutnoribackend.entity.Player;
 import com.example.yutnoribackend.entity.Room;
 import com.example.yutnoribackend.entity.User;
 import com.example.yutnoribackend.entity.UserRole;
+import com.example.yutnoribackend.exception.DataNotFoundException;
 import com.example.yutnoribackend.repository.AccountRepository;
 import com.example.yutnoribackend.repository.PlayerRepository;
 import com.example.yutnoribackend.repository.RoomRepository;
@@ -37,11 +38,7 @@ public class RoomService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    /***
-     * 1. 토큰에서 사용자 정보 획득 (유저 pk 얻기)
-     * 2. Room 생성 (이름, 비밀번호, 비밀방여부, 게임중 상태)
-     * 3. Player 생성 (유저 pk, room pk, 상태, 참가시각)
-     */
+    // 방 생성 및 생성자 입장
     @Transactional
     public boolean createRoom(HttpServletRequest request, RoomDTO roomDTO){
         String userId = tokenService.getUserIdFromToken(request);
@@ -60,6 +57,7 @@ public class RoomService {
         return true;
     }
 
+    // 방 생성
     @Transactional
     public Room makeRoom(RoomDTO roomDTO){
         Room createRoom = Room.builder()
@@ -74,6 +72,8 @@ public class RoomService {
         return room;
     }
 
+    // todo 방장 필요 - 권한 주기
+    // 플레이어 방 참가
     @Transactional
     public Player enterPlayer(User user, Room room){
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
@@ -87,6 +87,51 @@ public class RoomService {
                 .build();
 
         return playerRepository.save(roomPlayer);
+    }
+
+    @Transactional
+    public boolean closeRoom(int roomPk) throws DataNotFoundException{
+        if(!isEmptyRoom(roomPk)){
+            try {
+                deleteAllPlayerInRoom(roomPk);
+            } catch (DataNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        try {
+            deleteRoom(roomPk);
+        } catch (DataNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        return true;
+    }
+
+    // player 유무 판단
+    public boolean isEmptyRoom(int roomPk){
+        if(playerRepository.findPlayersByRoom_RoomPk(roomPk).isEmpty()){
+            return true;
+        }
+        return false;
+    }
+
+    // player 제거
+    @Transactional
+    public boolean deleteAllPlayerInRoom(int roomPk) throws DataNotFoundException {
+        Long res = playerRepository.deletePlayersByRoom_RoomPk(roomPk);
+        if (res == 0){
+            throw new DataNotFoundException("Failed to delete players with pk: " + roomPk);
+        }
+        return true;
+    }
+
+    // room 제거
+    @Transactional
+    public boolean deleteRoom(int roomPk) throws DataNotFoundException {
+        Long res = roomRepository.deleteRoomByRoomPk(roomPk);
+        if (res == 0){
+            throw new DataNotFoundException("Failed to delete room with pk: " + roomPk);
+        }
+        return true;
     }
 
 
