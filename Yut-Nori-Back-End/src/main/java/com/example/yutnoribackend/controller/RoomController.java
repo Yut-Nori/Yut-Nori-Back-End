@@ -2,13 +2,11 @@ package com.example.yutnoribackend.controller;
 
 import com.example.yutnoribackend.dto.ResponseDTO;
 import com.example.yutnoribackend.dto.RoomDTO;
+import com.example.yutnoribackend.exception.DataNotFoundException;
 import com.example.yutnoribackend.service.RoomService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -23,7 +21,6 @@ public class RoomController {
         this.roomService = roomService;
     }
 
-    // todo 방 생성
     @PostMapping("/createRoom")
     public ResponseEntity<?> CreateRoom(HttpServletRequest request, @Valid @RequestBody RoomDTO roomDTO){
         boolean createRoomResult = roomService.createRoom(request, roomDTO);
@@ -34,9 +31,18 @@ public class RoomController {
         }
     }
 
-    // todo 랜덤 매칭
-
     // todo 방 삭제
+    @DeleteMapping("/closeRoom/{roomPk}")
+    public ResponseEntity<?> CloseRoom(@PathVariable int roomPk) throws DataNotFoundException {
+        try {
+            roomService.closeRoom(roomPk);
+        }catch (DataNotFoundException e){
+            return ResponseEntity.ok(new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), "방 제거 실패"));
+        }
+        return ResponseEntity.ok(new ResponseDTO(HttpStatus.OK.value(), "방 제거 완료"));
+    }
+
+    // todo 랜덤 매칭
 
     // todo 방 나가기
 
