@@ -119,7 +119,7 @@ public class RoomService {
     public boolean deleteAllPlayerInRoom(int roomPk) throws DataNotFoundException {
         Long res = playerRepository.deletePlayersByRoom_RoomPk(roomPk);
         if (res == 0){
-            throw new DataNotFoundException("Failed to delete players with pk: " + roomPk);
+            throw new DataNotFoundException("해당 방의 플레이어를 찾을 수 없습니다. : " + roomPk);
         }
         return true;
     }
@@ -129,10 +129,28 @@ public class RoomService {
     public boolean deleteRoom(int roomPk) throws DataNotFoundException {
         Long res = roomRepository.deleteRoomByRoomPk(roomPk);
         if (res == 0){
-            throw new DataNotFoundException("Failed to delete room with pk: " + roomPk);
+            throw new DataNotFoundException("해당 방을 찾을수 없습니다. : " + roomPk);
         }
         return true;
     }
 
+    // todo
+    @Transactional
+    public boolean leaveRoom(int roomPk, HttpServletRequest request) throws DataNotFoundException {
+        String userId = tokenService.getUserIdFromToken(request);
+        long deleteResult = playerRepository.deletePlayersByUser_UserId(userId);
+        if(deleteResult == 0){
+            throw new DataNotFoundException("해당 플레이어를 찾을 수 없습니다. : " + userId);
+        }
+        if(Long.compare(getRoomPlayerNum(roomPk), 0) == 0){
+            deleteRoom(roomPk);
+        }
+        return true;
+    }
 
+    // 현재 방의 참가자 수 검색
+    public long getRoomPlayerNum(int roomPk){
+        long roomPlayerCount = playerRepository.countPlayerByRoom_RoomPk(roomPk);
+        return roomPlayerCount;
+    }
 }

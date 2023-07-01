@@ -31,7 +31,6 @@ public class RoomController {
         }
     }
 
-    // todo 방 삭제
     @DeleteMapping("/closeRoom/{roomPk}")
     public ResponseEntity<?> CloseRoom(@PathVariable int roomPk) throws DataNotFoundException {
         try {
@@ -42,9 +41,18 @@ public class RoomController {
         return ResponseEntity.ok(new ResponseDTO(HttpStatus.OK.value(), "방 제거 완료"));
     }
 
-    // todo 랜덤 매칭
+    @DeleteMapping("/leaveRoom/{roomPk}")
+    public ResponseEntity<?> LeaveRoom(@PathVariable int roomPk, HttpServletRequest request){
+        try {
+            roomService.leaveRoom(roomPk, request);
+        }catch (DataNotFoundException e) {
+            return ResponseEntity.ok(new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), "방 나가기 실패"));
+        }
 
-    // todo 방 나가기
+        return ResponseEntity.ok(new ResponseDTO(HttpStatus.OK.value(), "방 나가기"));
+    }
+
+    // todo 랜덤 매칭
 
     // todo 방 이름 변경
 
